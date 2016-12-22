@@ -1523,6 +1523,18 @@ const int FrontViewPositionNone = 0xff;
     {
         if ( [_delegate respondsToSelector:@selector(revealController:willMoveToPosition:)] )
             [_delegate revealController:self willMoveToPosition:newPosition];
+     
+//----------------------------------------------------------- my if -----------------------------------------------------
+        
+        // как можно решить проблему: создать новый вью, натянуть его на контроллер _frontViewPosition, отключить интеракцию со старым вью, добавить на новый панрекогнайзер и кнопку навигатора (если такая была) вручную. при закрытии новый вью удалить нахуй
+        
+        
+        if (newPosition == FrontViewPositionRight)
+        {
+            [_frontViewController.view endEditing:YES];
+            //_frontViewController.view.userInteractionEnabled = NO;
+        }
+//----------------------------------------------------------- end if ----------------------------------------------------
     }
     
     _frontViewPosition = newPosition;
@@ -1537,6 +1549,14 @@ const int FrontViewPositionNone = 0xff;
         {
             if ( [_delegate respondsToSelector:@selector(revealController:didMoveToPosition:)] )
                 [_delegate revealController:self didMoveToPosition:newPosition];
+         
+//----------------------------------------------------------- my if -----------------------------------------------------
+            if (newPosition == FrontViewPositionLeft)
+            {
+                [_frontViewController.view endEditing:YES];
+                //_frontViewController.view.userInteractionEnabled = YES;
+            }
+//----------------------------------------------------------- end if ----------------------------------------------------
         }
     };
 
