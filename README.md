@@ -1,7 +1,21 @@
+----------
+
+## Зачем эта вилка?
+        
+* Убираем клавиатуру если она была.
+* Выключаем интеракцию с основным контроллером когда боковое меню открыто https://github.com/John-Lluch/SWRevealViewController/issues/63
+* Восстанавливаем старые настройки `UIPanGestureRecognizer` при закрытии меню.
+
+## Что ещё можно улучшить?
+
+* А когда мы к свойству view обращаемся, мы не форсируем viewDidLoad?
+* Сделать кнопку на панели навигации кликабельной когда меню открыто, а не просто `UITapGestureRecognizer`. Но это, кажется, уже довольно сложно.
+
+----------
+
 # SWRevealViewController
 
 A UIViewController subclass for revealing a rear (left and/or right) view controller behind a front controller, inspired by the Facebook app, done right!
-
 
 ## NOTE ( Version 2.3)
 
