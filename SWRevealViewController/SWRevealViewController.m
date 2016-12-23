@@ -602,6 +602,9 @@ static CGFloat scaledValue( CGFloat v1, CGFloat min2, CGFloat max2, CGFloat min1
     FrontViewPosition _panInitialFrontPosition;
     NSMutableArray *_animationQueue;
     BOOL _userInteractionStore;
+//----------------------------------------------------------- my var ----------------------------------------------------
+    UIView *_panRecognizerOwner;
+//----------------------------------------------------------- end var ---------------------------------------------------
 }
 
 const int FrontViewPositionNone = 0xff;
@@ -1525,14 +1528,42 @@ const int FrontViewPositionNone = 0xff;
             [_delegate revealController:self willMoveToPosition:newPosition];
      
 //----------------------------------------------------------- my if -----------------------------------------------------
+        // такой вопрос. а когда мы к свойству view обращаемся, мы не форсируем viewDidLoad?
         
-        // как можно решить проблему: создать новый вью, натянуть его на контроллер _frontViewPosition, отключить интеракцию со старым вью, добавить на новый панрекогнайзер и кнопку навигатора (если такая была) вручную. при закрытии новый вью удалить нахуй
+        // убираем клавиатуру
         
+        // https://github.com/John-Lluch/SWRevealViewController/issues/63
+        
+        // кроме того, мы захватываем старого хозяина рекогнайзера, сэйвим его. восстанавливаем в случае, если не был установлен новый хозяин
+        
+        // единственное что хотелось бы улучшить, это сделать кнопку на панели навигации кликабельной когда меню открыто, а не просто рекогнайзер. но это, кажется, уже довольно сложно
         
         if (newPosition == FrontViewPositionRight)
         {
             [_frontViewController.view endEditing:YES];
-            //_frontViewController.view.userInteractionEnabled = NO;
+            UIView *lockingView = [UIView new];
+            lockingView.translatesAutoresizingMaskIntoConstraints = NO;
+            
+            _panRecognizerOwner = _panGestureRecognizer.view;
+            UITapGestureRecognizer *tap = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(revealToggle:)];
+            [lockingView addGestureRecognizer:tap];
+            [lockingView addGestureRecognizer:_panGestureRecognizer];
+            [lockingView setTag:12231];
+            [_frontViewController.view addSubview:lockingView];
+            
+            NSDictionary *viewsDictionary = NSDictionaryOfVariableBindings(lockingView);
+            
+            [_frontViewController.view addConstraints:
+             [NSLayoutConstraint constraintsWithVisualFormat:@"|[lockingView]|"
+                                                     options:0
+                                                     metrics:nil
+                                                       views:viewsDictionary]];
+            [_frontViewController.view addConstraints:
+             [NSLayoutConstraint constraintsWithVisualFormat:@"V:|[lockingView]|"
+                                                     options:0
+                                                     metrics:nil
+                                                       views:viewsDictionary]];
+            [lockingView sizeToFit];
         }
 //----------------------------------------------------------- end if ----------------------------------------------------
     }
@@ -1554,7 +1585,14 @@ const int FrontViewPositionNone = 0xff;
             if (newPosition == FrontViewPositionLeft)
             {
                 [_frontViewController.view endEditing:YES];
-                //_frontViewController.view.userInteractionEnabled = YES;
+                UIView *lockingView = [_frontViewController.view viewWithTag:12231];
+                [lockingView removeFromSuperview];
+                if (_panRecognizerOwner) {
+                    if (!_panGestureRecognizer.view || _panGestureRecognizer.view == lockingView) {
+                        [_panRecognizerOwner addGestureRecognizer:_panGestureRecognizer];
+                    }
+                    _panRecognizerOwner = nil;
+                }
             }
 //----------------------------------------------------------- end if ----------------------------------------------------
         }
